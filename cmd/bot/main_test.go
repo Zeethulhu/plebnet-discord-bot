@@ -2,8 +2,11 @@ package main
 
 import "testing"
 
-func TestMainDummy(t *testing.T) {
-	if false != false {
-		t.Error("This should never fail")
+func TestStartupMessage(t *testing.T) {
+	got := getStartupMessage()
+	want := "Bot started."
+
+	if got != want {
+		t.Errorf("expected %q, got %q", want, got)
 	}
 }

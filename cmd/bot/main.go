@@ -3,5 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("Bot started.")
+	fmt.Println(getStartupMessage())
+}
+
+func getStartupMessage() string {
+	return "Bot started."
 }
