@@ -31,6 +31,11 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if handler, ok := CommandMap[cmd]; ok {
 		handler(args, s, m)
 	} else {
-		s.ChannelMessageSend(m.ChannelID, "❓ Unknown command. Try `!help`.")
+		_, err := s.ChannelMessageSend(m.ChannelID, "❓ Unknown command. Try `!help`.")
+		if err != nil {
+			// Handle the error, e.g. log it
+			logger.Printf("❌ Failed to send message: %v", err)
+			return
+		}
 	}
 }

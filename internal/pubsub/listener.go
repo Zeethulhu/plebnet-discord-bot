@@ -40,10 +40,25 @@ func handleServerEvent(msg *nats.Msg, discord *discordgo.Session, channelID stri
 	tStr := t.Local().Format("Jan 2 15:04:05")
 
 	if event.LogOn {
-		discord.ChannelMessageSend(channelID, fmt.Sprintf("✅ Player logged in: @%s at %s", event.Player, tStr))
+		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("✅ Player logged in: @%s at %s", event.Player, tStr))
+		if err != nil {
+			// Handle the error, e.g. log it
+			logger.Printf("❌ Failed to send message: %v", err)
+			return
+		}
 	} else if event.LogOff {
-		discord.ChannelMessageSend(channelID, fmt.Sprintf("🚪 Player logged out: @%s at %s", event.Player, tStr))
+		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("🚪 Player logged out: @%s at %s", event.Player, tStr))
+		if err != nil {
+			// Handle the error, e.g. log it
+			logger.Printf("❌ Failed to send message: %v", err)
+			return
+		}
 	} else {
-		discord.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ Unrecognized player event for @%s at %s", event.Player, tStr))
+		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ Unrecognized player event for @%s at %s", event.Player, tStr))
+		if err != nil {
+			// Handle the error, e.g. log it
+			logger.Printf("❌ Failed to send message: %v", err)
+			return
+		}
 	}
 }
