@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/pubsub"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
@@ -36,8 +37,13 @@ func Start(token string, eventsChan string) {
 		logger.Fatalf("❌ Cannot open the session: %v", err)
 	}
 
+	manager, err := messagepicker.NewManager("internal/config/messages.yaml", 3)
+	if err != nil {
+		log.Fatalf("❌ Error loading messages: %v", err)
+	}
+
 	// Start the Events subscription in a goroutine
-	go pubsub.StartNATSListener(nc, dg, eventsChan)
+	go pubsub.StartNATSListener(nc, dg, eventsChan, manager)
 	logger.Println("NATS Event subscription routine started")
 
 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")
