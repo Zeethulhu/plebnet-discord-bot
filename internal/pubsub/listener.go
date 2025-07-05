@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
 )
@@ -17,9 +18,9 @@ type ServerEvent struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID string) {
+func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID string, manager *messagepicker.MessageManager) {
 	_, err := nc.Subscribe("arcadia.belsco", func(msg *nats.Msg) {
-		handleServerEvent(msg, discord, channelID)
+		handleServerEvent(msg, discord, channelID, manager)
 	})
 
 	if err != nil {
@@ -29,32 +30,48 @@ func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID stri
 	log.Println("📡 NATS listener running on subject 'arcadia.belsco'")
 }
 
-func handleServerEvent(msg *nats.Msg, discord *discordgo.Session, channelID string) {
+func handleServerEvent(msg *nats.Msg, discord *discordgo.Session, channelID string, manager *messagepicker.MessageManager) {
 	var event ServerEvent
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		log.Printf("❌ Failed to parse event: %v", err)
 		return
 	}
 
-	t, _ := time.Parse(time.RFC3339Nano, event.Timestamp)
+	t, err := time.Parse(time.RFC3339Nano, event.Timestamp)
+	if err != nil {
+		log.Printf("❌ Failed to parse timestamp: %v", err)
+		t = time.Now()
+	}
 	tStr := t.Local().Format("Jan 2 15:04:05")
 
+	var msgStr string
+
 	if event.LogOn {
-		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("✅ Player logged in: @%s at %s", event.Player, tStr))
+		msgStr, err = manager.Pick("join", event.Player)
+		if err != nil {
+			log.Println("Message error:", err)
+			return
+		}
+		_, err = discord.ChannelMessageSend(channelID, fmt.Sprintf("Player joined. %s", msgStr))
 		if err != nil {
 			// Handle the error, e.g. log it
 			logger.Printf("❌ Failed to send message: %v", err)
 			return
 		}
 	} else if event.LogOff {
-		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("🚪 Player logged out: @%s at %s", event.Player, tStr))
+		msgStr, err = manager.Pick("leave", event.Player)
+		if err != nil {
+			log.Println("Message error:", err)
+			return
+		}
+		_, err = discord.ChannelMessageSend(channelID, fmt.Sprintf("Player left. %s", msgStr))
 		if err != nil {
 			// Handle the error, e.g. log it
 			logger.Printf("❌ Failed to send message: %v", err)
 			return
 		}
 	} else {
-		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("⚠️ Unrecognized player event for @%s at %s", event.Player, tStr))
+		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("⚠️  Unrecognized player event for @%s at %s", event.Player, tStr))
 		if err != nil {
 			// Handle the error, e.g. log it
 			logger.Printf("❌ Failed to send message: %v", err)
