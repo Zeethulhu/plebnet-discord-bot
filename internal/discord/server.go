@@ -2,6 +2,7 @@ package discord
 
 import (
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -26,6 +27,19 @@ func StartServer() {
 		logger.Fatal("DISCORD_EVENTS_CHANNEL is not set")
 	}
 
+	natsAddr := os.Getenv("DISCORD_NATS_ADDRESS")
+	if natsAddr == "" {
+		logger.Fatal("DISCORD_NATS_ADDRESS is not set")
+	}
+
+	natsTopic := os.Getenv("DISCORD_NATS_TOPIC")
+	if natsTopic == "" {
+		logger.Fatal("DISCORD_NATS_TOPIC is not set")
+	}
+
+	natsAddr = strings.TrimSpace(natsAddr)
+	natsTopic = strings.TrimSpace(natsTopic)
+
 	logger.Println("🚀 Starting bot...")
-	Start(token, eventsChannel)
+	Start(token, eventsChannel, natsAddr, natsTopic)
 }

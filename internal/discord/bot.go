@@ -12,10 +12,10 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func Start(token string, eventsChan string) {
+func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 
 	// Connecting to NATS to subscribe to Enshrouded Server Events
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := nats.Connect(natsAddr)
 	if err != nil {
 		log.Fatal("❌ Failed to connect to NATS:", err)
 	}
@@ -43,7 +43,7 @@ func Start(token string, eventsChan string) {
 	}
 
 	// Start the Events subscription in a goroutine
-	go pubsub.StartNATSListener(nc, dg, eventsChan, manager)
+	go pubsub.StartNATSListener(nc, dg, eventsChan, natsTopic, manager)
 	logger.Println("NATS Event subscription routine started")
 
 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")
