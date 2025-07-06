@@ -18,8 +18,8 @@ type ServerEvent struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID string, manager *messagepicker.MessageManager) {
-	_, err := nc.Subscribe("arcadia.belsco", func(msg *nats.Msg) {
+func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID, subject string, manager *messagepicker.MessageManager) {
+	_, err := nc.Subscribe(subject, func(msg *nats.Msg) {
 		handleServerEvent(msg, discord, channelID, manager)
 	})
 
@@ -27,7 +27,7 @@ func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID stri
 		log.Fatalf("❌ Failed to subscribe to NATS subject: %v", err)
 	}
 
-	log.Println("📡 NATS listener running on subject 'arcadia.belsco'")
+	log.Printf("📡 NATS listener running on subject '%s'", subject)
 }
 
 func handleServerEvent(msg *nats.Msg, discord *discordgo.Session, channelID string, manager *messagepicker.MessageManager) {
