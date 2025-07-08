@@ -3,6 +3,7 @@ package discord
 import (
 	"strings"
 
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/discord/commands"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/utils"
 	"github.com/bwmarrin/discordgo"
 )
@@ -27,13 +28,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	cmd := strings.ToLower(parts[0])
 	args := parts[1:]
 
-	// Route command
-	if handler, ok := CommandMap[cmd]; ok {
-		handler(args, s, m)
+	// Route command using registry
+	if handler, ok := commands.Get(cmd); ok {
+		handler.Execute(args, s, m)
 	} else {
 		_, err := s.ChannelMessageSend(m.ChannelID, "❓ Unknown command. Try `!help`.")
 		if err != nil {
-			// Handle the error, e.g. log it
 			logger.Printf("❌ Failed to send message: %v", err)
 			return
 		}
