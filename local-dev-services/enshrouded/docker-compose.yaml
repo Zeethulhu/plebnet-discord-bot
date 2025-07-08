@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats:latest
+    container_name: emulated-enshrouded-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
+    networks:
+      - emulated-enshrouded
+
+  vector:
+    image: timberio/vector:0.48.0-debian
+    container_name: emulated-enshrouded-vector
+    network_mode: service:nats  # Share network namespace with NATS
+    ports:
+      - "8686:8686"
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+
+networks:
+  emulated-enshrouded:
+    driver: bridge
+
