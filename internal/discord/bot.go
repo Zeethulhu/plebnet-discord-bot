@@ -55,5 +55,7 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 
 	logger.Println("Shutting down.")
 	defer nc.Close()
-	dg.Close()
+	if err := dg.Close(); err != nil {
+		logger.Printf("error closing Discord session: %v", err)
+	}
 }
