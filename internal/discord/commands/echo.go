@@ -20,12 +20,12 @@ func (e *Echo) Execute(args []string, s *discordgo.Session, m *discordgo.Message
 		return
 	}
 	echoMsg := strings.Join(args, " ")
-	msg, err := s.ChannelMessageSend(m.ChannelID, echoMsg)
+	_, err := s.ChannelMessageSend(m.ChannelID, echoMsg)
 	if err != nil {
 		logger.Printf("❌ Failed to send message: %v", err)
 		return
 	}
-	logger.Printf("✅ Message sent: %s", msg.ID)
+	logger.Printf("✅ `!echo` command invoked. [%s]", echoMsg)
 }
 
 func init() {

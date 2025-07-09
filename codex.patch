@@ -1,0 +1,220 @@
+diff --git a/internal/discord/bot.go b/internal/discord/bot.go
+index 4345ee246be5adaebf0d8546222b3da4000caa3d..67578a373139721f79caaeb3ada4c25c327c1726 100644
+--- a/internal/discord/bot.go
++++ b/internal/discord/bot.go
+@@ -20,42 +20,43 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
+ 		log.Fatal("❌ Failed to connect to NATS:", err)
+ 	}
+ 
+ 	// Create a new Discord session
+ 	logger.Println("🤖 Creating Discord session...")
+ 	dg, err := discordgo.New("Bot " + token)
+ 	if err != nil {
+ 		logger.Fatalf("❌ Error creating Discord session: %v", err)
+ 	}
+ 
+ 	// Register the message handler
+ 	dg.AddHandler(MessageCreate)
+ 
+ 	// Open the websocket connection to Discord
+ 	logger.Println("📡 Connecting to Discord...")
+ 	err = dg.Open()
+ 	if err != nil {
+ 		logger.Fatalf("❌ Cannot open the session: %v", err)
+ 	}
+ 
+ 	manager, err := messagepicker.NewManager("internal/config/messages.yaml", 3)
+ 	if err != nil {
+ 		log.Fatalf("❌ Error loading messages: %v", err)
+ 	}
+ 
+-	// Start the Events subscription in a goroutine
+-	go pubsub.StartNATSListener(nc, dg, eventsChan, natsTopic, manager)
++	// Register event handlers and start subscriptions
++	pubsub.NewEnshroudedLoginHandler(eventsChan, natsTopic, manager)
++	go pubsub.StartListeners(nc, dg)
+ 	logger.Println("NATS Event subscription routine started")
+ 
+ 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")
+ 
+ 	// Wait here until CTRL-C or other signal is received
+ 	stop := make(chan os.Signal, 1)
+ 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+ 	<-stop
+ 
+ 	logger.Println("Shutting down.")
+ 	defer nc.Close()
+ 	if err := dg.Close(); err != nil {
+ 		logger.Printf("error closing Discord session: %v", err)
+ 	}
+ }
+diff --git a/internal/pubsub/listener.go b/internal/pubsub/enshrouded.go
+similarity index 50%
+rename from internal/pubsub/listener.go
+rename to internal/pubsub/enshrouded.go
+index f6cba4178a4ec8557f98647203648c27ad2e7c4d..f595baf4ffee2c4418a4dede43d41a1255caac23 100644
+--- a/internal/pubsub/listener.go
++++ b/internal/pubsub/enshrouded.go
+@@ -1,81 +1,79 @@
+ package pubsub
+ 
+ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"log"
+ 	"time"
+ 
+ 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
+ 	"github.com/bwmarrin/discordgo"
+ 	"github.com/nats-io/nats.go"
+ )
+ 
++// ServerEvent represents an Enshrouded login/logout event.
+ type ServerEvent struct {
+ 	LogOn     bool   `json:"log_on"`
+ 	LogOff    bool   `json:"log_off"`
+ 	Player    string `json:"player"`
+ 	Timestamp string `json:"timestamp"`
+ }
+ 
+-func StartNATSListener(nc *nats.Conn, discord *discordgo.Session, channelID, subject string, manager *messagepicker.MessageManager) {
+-	_, err := nc.Subscribe(subject, func(msg *nats.Msg) {
+-		handleServerEvent(msg, discord, channelID, manager)
+-	})
+-
+-	if err != nil {
+-		log.Fatalf("❌ Failed to subscribe to NATS subject: %v", err)
+-	}
++// EnshroudedLoginHandler handles login/logout events published to NATS.
++type EnshroudedLoginHandler struct {
++	ChannelID   string
++	SubjectName string
++	Manager     *messagepicker.MessageManager
++}
+ 
+-	log.Printf("📡 NATS listener running on subject '%s'", subject)
++// NewEnshroudedLoginHandler creates the handler and registers it.
++func NewEnshroudedLoginHandler(channelID, subject string, manager *messagepicker.MessageManager) *EnshroudedLoginHandler {
++	h := &EnshroudedLoginHandler{ChannelID: channelID, SubjectName: subject, Manager: manager}
++	Register(h)
++	return h
+ }
+ 
+-func handleServerEvent(msg *nats.Msg, discord *discordgo.Session, channelID string, manager *messagepicker.MessageManager) {
++func (h *EnshroudedLoginHandler) Subject() string { return h.SubjectName }
++
++func (h *EnshroudedLoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
+ 	var event ServerEvent
+ 	if err := json.Unmarshal(msg.Data, &event); err != nil {
+ 		log.Printf("❌ Failed to parse event: %v", err)
+ 		return
+ 	}
+ 
+ 	t, err := time.Parse(time.RFC3339Nano, event.Timestamp)
+ 	if err != nil {
+ 		log.Printf("❌ Failed to parse timestamp: %v", err)
+ 		t = time.Now()
+ 	}
+ 	tStr := t.Local().Format("Jan 2 15:04:05")
+ 
+ 	var msgStr string
+-
+ 	if event.LogOn {
+-		msgStr, err = manager.Pick("join", event.Player)
++		msgStr, err = h.Manager.Pick("join", event.Player)
+ 		if err != nil {
+ 			log.Println("Message error:", err)
+ 			return
+ 		}
+-		_, err = discord.ChannelMessageSend(channelID, fmt.Sprintf("Player joined. %s", msgStr))
++		_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player joined. %s", msgStr))
+ 		if err != nil {
+-			// Handle the error, e.g. log it
+ 			logger.Printf("❌ Failed to send message: %v", err)
+-			return
+ 		}
+ 	} else if event.LogOff {
+-		msgStr, err = manager.Pick("leave", event.Player)
++		msgStr, err = h.Manager.Pick("leave", event.Player)
+ 		if err != nil {
+ 			log.Println("Message error:", err)
+ 			return
+ 		}
+-		_, err = discord.ChannelMessageSend(channelID, fmt.Sprintf("Player left. %s", msgStr))
++		_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player left. %s", msgStr))
+ 		if err != nil {
+-			// Handle the error, e.g. log it
+ 			logger.Printf("❌ Failed to send message: %v", err)
+-			return
+ 		}
+ 	} else {
+-		_, err := discord.ChannelMessageSend(channelID, fmt.Sprintf("⚠️  Unrecognized player event for @%s at %s", event.Player, tStr))
++		_, err := discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("⚠️ Unrecognized player event for @%s at %s", event.Player, tStr))
+ 		if err != nil {
+-			// Handle the error, e.g. log it
+ 			logger.Printf("❌ Failed to send message: %v", err)
+-			return
+ 		}
+ 	}
+ }
+diff --git a/internal/pubsub/nats.go b/internal/pubsub/nats.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..72dfe4d392b17e9b7323509f9a809c979bf940f6
+--- /dev/null
++++ b/internal/pubsub/nats.go
+@@ -0,0 +1,22 @@
++package pubsub
++
++import (
++	"log"
++
++	"github.com/bwmarrin/discordgo"
++	"github.com/nats-io/nats.go"
++)
++
++// StartListeners subscribes all registered handlers to their subjects.
++func StartListeners(nc *nats.Conn, discord *discordgo.Session) {
++	for _, h := range All() {
++		handler := h
++		_, err := nc.Subscribe(handler.Subject(), func(msg *nats.Msg) {
++			handler.Handle(msg, discord)
++		})
++		if err != nil {
++			log.Fatalf("❌ Failed to subscribe to NATS subject: %v", err)
++		}
++		log.Printf("📡 NATS listener running on subject '%s'", handler.Subject())
++	}
++}
+diff --git a/internal/pubsub/registry.go b/internal/pubsub/registry.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..0da84e9b202ec66488a45f6a9a60bea3f6ca23fc
+--- /dev/null
++++ b/internal/pubsub/registry.go
+@@ -0,0 +1,26 @@
++package pubsub
++
++import (
++	"github.com/bwmarrin/discordgo"
++	"github.com/nats-io/nats.go"
++)
++
++// Handler represents a subscription handler for a NATS subject.
++type Handler interface {
++	// Subject returns the NATS subject this handler subscribes to.
++	Subject() string
++	// Handle processes a NATS message.
++	Handle(msg *nats.Msg, s *discordgo.Session)
++}
++
++var registry []Handler
++
++// Register adds a handler to the registry.
++func Register(h Handler) {
++	registry = append(registry, h)
++}
++
++// All returns all registered handlers.
++func All() []Handler {
++	return registry
++}
+
