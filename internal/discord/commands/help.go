@@ -18,12 +18,16 @@ func (h *Help) Execute(args []string, s *discordgo.Session, m *discordgo.Message
 	for _, cmd := range All() {
 		builder.WriteString("!" + cmd.Name() + " - " + cmd.Description() + "\n")
 	}
-	msg, err := s.ChannelMessageSend(m.ChannelID, builder.String())
+
+	_, err := s.ChannelMessageSend(m.ChannelID, builder.String())
+
 	if err != nil {
 		logger.Printf("❌ Failed to send message: %v", err)
 		return
 	}
-	logger.Printf("✅ Message sent: %s", msg.ID)
+
+	logger.Println("✅ `!help` command invoked.")
+
 }
 
 func init() {

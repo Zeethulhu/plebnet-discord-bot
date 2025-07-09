@@ -1,0 +1,12 @@
+{
+   "file": "/path/to/enshrouded/logs/enshrouded.log",
+   "filename": "/path/to/enshrouded/logs/enshrouded.log",
+   "host": "myserver",
+   "log_off": true,
+   "log_on": false,
+   "message": "[I 65:16:31,557] [server] Remove Player 'zeethulhu'",
+   "player": "zeethulhu",
+   "source_type": "file",
+   "tag": "enshrouded",
+   "timestamp": "2025-07-07T19:02:04.419136239Z"
+}

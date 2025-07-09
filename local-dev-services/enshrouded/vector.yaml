@@ -1,0 +1,144 @@
+#                                    __   __  __
+#                                    \ \ / / / /
+#                                     \ V / / /
+#                                      \_/  \/
+#
+#                                    V E C T O R
+#                                   Configuration
+#
+# ------------------------------------------------------------------------------
+# Website: https://vector.dev
+# Docs: https://vector.dev/docs
+# Chat: https://chat.vector.dev
+# ------------------------------------------------------------------------------
+
+# Change this to use a non-default directory for Vector data storage:
+# data_dir: "/var/lib/vector"
+
+# Vector configuration
+
+data_dir: "/home/briggzee/.vector/data"
+
+sources:
+  emulated_enshrouded:
+    type: demo_logs
+    format: shuffle
+    interval: 0.5
+    sequence: true
+    lines:
+      - "[I 00:00:01,299] [ecs] Build zones changed"
+      - "[I 00:00:02,541] [online] Server connected to Steam successfully"
+      - "[I 00:00:02,847] [online] Server is not VAC Secure!"
+      - "[I 00:00:02,847] [online] Server SteamId: 12345678901234567"
+      - "[I 00:00:02,847] [online] Public ipv4: 142.250.70.206"
+      - "[I 00:00:02,848] [OnlineProviderSteam] 'Initialize' (up)!"
+      - "[I 00:00:02,848] [OnlineProviderSteam] 'JoinOrCreateGame' (up)!"
+      - "[I 00:00:02,848] Initializing P2P api: NetworkingMessages"
+      - "[I 00:00:02,849] [OnlineProviderSteam] 'SetLobbyData' (up)!"
+      - "[I 00:00:02,849] [OnlineProviderSteam] 'JoinLocalPlayers' (up)!"
+      - "[I 00:00:02,849] [OnlineProviderSteam] 'ConnectToPeers' (up)!"
+      - "[I 00:00:02,849] [OnlineProviderSteam] finished transition from 'Uninitialized' to 'InGame' (current='InGame')!"
+      - "[I 00:00:02,851] [Session] 'HostOnline' (up)!"
+      - "[I 00:00:02,851] [Session] finished transition from 'Lobby' to 'Host_Online' (current='Host_Online')!"
+      - "2025-06-07 08:57:36,250 INFO: Waiting for enshrouded_server.exe to be running"
+      - "[I 14:25:21,282] [server] Player 'Zeethulhu' logged in with Permissions:"
+      - "[I 14:25:16,661]   m#1(1537): up 0 (0), down 0 (0), remote 0 (0), limit 2,048, lost 0, ping 121 ms, EstablishingBaseline"
+      - "[I 14:25:13,966] [online] Session accepted with peer (steamid:01234567901234567)"
+      - "[I 14:25:13,966] [online] Added peer #0 (steamid:012345678901234567)"
+      - "[E 14:25:14,752] [online] Begin auth session with peer #0"
+      - "[I 14:25:16,035] [online] Client '012345678901234567' authenticated by steam"
+      - "[W 14:25:16,171] [session] Unable to find machine for peer 0."
+      - "[I 14:25:16,171] [session] Add remote machine index 1 (id: 1854140745)."
+      - "[I 14:25:16,171] [SessionPlayer] started transition from 'Free' to 'Remote_InSession' (current='<invalid>')!"
+      - "[I 14:25:16,171] [session] Remote player added. Player handle: 0(11)"
+      - "[I 14:25:16,172] [SessionPlayer] 'Reserve' (up)!"
+      - "[I 14:25:16,172] [SessionPlayer] 'WaitForJoin' (up)!"
+      - "[I 14:25:16,172] [SessionPlayer] finished transition from 'Free' to 'Remote_InSession' (current='Remote_InSession')!"
+      - "[I 14:25:16,661] -------------- Session ----------------"
+      - "[I 14:25:16,661] Machines:"
+      - "[I 14:25:16,661]   m#0(128): up 0 (0), down 0 (0), remote 0 (0), limit 2,048, lost 0, ping 9,223,372,036,854 ms, EstablishingBaseline"
+      - "[I 14:25:16,661]   m#1(1537): up 0 (0), down 0 (0), remote 0 (0), limit 2,048, lost 0, ping 121 ms, EstablishingBaseline"
+      - "[I 14:25:16,662] ---------------------------------------"
+      - "[I 14:25:16,714] Received new Character save game"
+      - "[I 14:25:21,279] [server] Machine '1': Player '0(11)' logged in"
+      - "[I 14:25:21,280] [ecs] readEntitySerializationContext: Templates: 5  Components: 209  Size: 58,064"
+      - "[I 14:25:21,282] [server] Player 'Zeethulhu' logged in with Permissions:"
+      - "[I 14:25:25,310] [session] Congestion baseline established for machine 1(11)"
+      - "[I 14:25:46,663]   m#1(1537): up 72 (81), down 42 (45), remote 73 (79), limit 2,726, lost 0, ping 118 ms, OperatingNormally"
+      - "[I 15:43:44,401] [server] Remove Entity for Player 'Zeethulhu'"
+      - "[I 15:43:44,402] [savedata] Compression of Blob 0x00000000::SNAP took 385.00 us"
+      - "[I 15:43:44,403] [ecss] writeEntitySerializationContext:"
+      - "[I 15:43:44,403] [ecss]   Templates: 110 (13,479 bytes) Components: 196 (73,400 bytes)  Size: 86,879"
+      - "[I 15:43:44,404] [ecss]   Entities: 629 (104 children)"
+      - "[I 15:43:44,404] [server] Remove Player 'Zeethulhu'"
+      - "[I 15:43:44,417] [savexxx] SAVE 4 bases 524 entities size 552,144"
+      - "[I 15:43:44,417] [savedata] Compression of Blob 0x00000539::EXTS took 14.00 us"
+      - "[I 15:43:44,420] [server] Save Serialization took 167.74 ms over 17 Ticks"
+      - "[I 15:43:44,420] [server] Saved"
+      - "[I 15:43:44,430] [savedata] Compression of Blob 0x00000539::SRSG took 12.39 ms"
+      - "[I 15:43:44,430] [savedata] Compression of Blob 0x00000000::CSTR took 20.00 us"
+      - "[I 15:43:44,430] [savedata] Compression of Blob 0x00000000::WETR took 40.00 us"
+      - "[I 15:43:44,545] [online] Disconnecting peer #0"
+      - "[I 15:43:44,545] [online] Removed peer #0"
+      - "[W 15:43:44,546] [session] Remove player from session. Not found in online game info. Player Handle: 0(11) "
+      - "[I 15:43:44,547] [SessionPlayer] started transition from 'Remote_InSession' to 'Free' (current='<invalid>')!"
+      - "[I 15:43:44,548] [SessionPlayer] 'WaitForJoin' (down)!"
+      - "[I 15:43:44,549] [session] Player removed. Player handle: 0(11)"
+      - "[I 15:43:44,549] [SessionPlayer] 'Reserve' (down)!"
+      - "[I 15:43:44,549] [SessionPlayer] finished transition from 'Remote_InSession' to 'Free' (current='Free')!"
+
+transforms:
+  tag_enshrouded_logs:
+    type: remap
+    inputs:
+      - emulated_enshrouded
+    source: |
+      .tag = "enshrouded"
+      .filename = .file
+
+  drop_dashed_lines:
+    type: filter
+    inputs: ["tag_enshrouded_logs"]
+    condition: |
+      !match_any!(.message, [r'^\[[I 0-9:,]*\] --------------', r'^\[[I 0-9:,]*\] Machines:$'])
+
+  login_events:
+    type: filter
+    inputs: ["tag_enshrouded_logs"]
+    condition: |
+      match_any!(.message, [r'Player \'\w*\' logged in with Permissions', r'Remove Player \'.*\'$'])
+
+  tag_login_events:
+    type: remap
+    inputs:
+      - login_events
+    source: |
+      . |= parse_regex!(.message, r'\'(?P<player>.*)\'')
+      .log_on = match!(.message, r'Player \'\w*\' logged in with Permissions')
+      .log_off = match!(.message, r'Remove Player \'.*\'$')
+sinks:
+  console_out:
+    type: console
+    # inputs: ["drop_dashed_lines"]
+    inputs: ["tag_login_events"]
+    target: stdout
+    encoding:
+      codec: json
+      json:
+        pretty: true
+
+  nats_server_dev:
+    type: nats
+    inputs:
+      - tag_login_events
+    subject: "enshrouded-logins-dev"
+    url: nats://localhost:4222
+    encoding:
+      codec: json
+
+# Vector's GraphQL API (disabled by default)
+# Uncomment to try it out with the `vector top` command or
+# in your browser at http://localhost:8686
+# api:
+#   enabled: true
+#   address: "127.0.0.1:8686"

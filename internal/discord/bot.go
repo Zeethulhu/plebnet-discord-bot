@@ -1,13 +1,12 @@
 package discord
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
-	"github.com/Zeethulhu/plebnet-discord-bot/internal/pubsub"
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/subscribers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
 )
@@ -17,7 +16,7 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 	// Connecting to NATS to subscribe to Enshrouded Server Events
 	nc, err := nats.Connect(natsAddr)
 	if err != nil {
-		log.Fatal("❌ Failed to connect to NATS:", err)
+		logger.Fatal("❌ Failed to connect to NATS:", err)
 	}
 
 	// Create a new Discord session
@@ -39,11 +38,12 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 
 	manager, err := messagepicker.NewManager("internal/config/messages.yaml", 3)
 	if err != nil {
-		log.Fatalf("❌ Error loading messages: %v", err)
+		logger.Fatalf("❌ Error loading messages: %v", err)
 	}
 
-	// Start the Events subscription in a goroutine
-	go pubsub.StartNATSListener(nc, dg, eventsChan, natsTopic, manager)
+	// Register event handlers and start subscriptions
+	subscribers.NewEnshroudedLoginHandler(eventsChan, natsTopic, manager)
+	go subscribers.StartListeners(nc, dg)
 	logger.Println("NATS Event subscription routine started")
 
 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")

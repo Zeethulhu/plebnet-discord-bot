@@ -1,0 +1,12 @@
+{
+   "file": "/path/to/enshrouded/logs/enshrouded.log",
+   "filename": "/path/to/enshrouded/logs/enshrouded.log",
+   "host": "myserver",
+   "log_off": false,
+   "log_on": true,
+   "message": "[I 59:36:04,037] [server] Player 'zeethulhu' logged in with Permissions:",
+   "player": "zeethulhu",
+   "source_type": "file",
+   "tag": "enshrouded",
+   "timestamp": "2025-07-07T13:21:34.434076948Z"
+}
