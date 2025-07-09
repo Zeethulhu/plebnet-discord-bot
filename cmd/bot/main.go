@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/discord"
 )
 
 func main() {
 	discord.StartServer()
-	fmt.Println(getStartupMessage())
+	logger.Println(getStartupMessage())
 }
 
 func getStartupMessage() string {
