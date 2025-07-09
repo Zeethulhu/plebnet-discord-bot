@@ -1,7 +1,8 @@
 package commands
 
 import (
-	"github.com/Zeethulhu/plebnet-discord-bot/internal/utils"
+	"log"
+	"os"
 )
 
-var logger = utils.NewLogger("Commands")
+var logger = log.New(os.Stdout, "[Discord] ", log.LstdFlags)
