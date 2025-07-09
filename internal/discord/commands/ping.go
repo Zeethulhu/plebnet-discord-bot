@@ -14,7 +14,7 @@ func (p *Ping) Execute(args []string, s *discordgo.Session, m *discordgo.Message
 		logger.Printf("❌ Failed to send message: %v", err)
 		return
 	}
-	logger.Print("✅ `!ping` command invoked.")
+	logger.Println("✅ `!ping` command invoked.")
 }
 
 func init() {

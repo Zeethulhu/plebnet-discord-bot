@@ -23,7 +23,7 @@ func (h *Help) Execute(args []string, s *discordgo.Session, m *discordgo.Message
 		logger.Printf("❌ Failed to send message: %v", err)
 		return
 	}
-	logger.Print("✅ `!help` command invoked.")
+	logger.Println("✅ `!help` command invoked.")
 }
 
 func init() {
