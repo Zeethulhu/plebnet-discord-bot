@@ -1,17 +1,20 @@
 package discord
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/subscribers"
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/timers"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
 )
 
 func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// Connecting to NATS to subscribe to Enshrouded Server Events
 	nc, err := nats.Connect(natsAddr)
@@ -46,12 +49,19 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 	go subscribers.StartListeners(nc, dg)
 	logger.Println("NATS Event subscription routine started")
 
+	if _, err := timers.NewEnshroudedNewsTimer(eventsChan, "steam_news.db"); err == nil {
+		go timers.Start(ctx, dg)
+	} else {
+		logger.Printf("❌ Failed to start Steam news timer: %v", err)
+	}
+
 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")
 
 	// Wait here until CTRL-C or other signal is received
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
+	cancel()
 
 	logger.Println("Shutting down.")
 	defer nc.Close()
