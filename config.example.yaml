@@ -1,0 +1,11 @@
+# Example configuration file for plebnet-discord-bot
+# Copy this file to config.yaml and fill in your values.
+
+discord_token: ""
+# Discord channel ID for sending messages
+# e.g. "123456789012345678"
+events_channel: ""
+# Address of the NATS server
+nats_address: "nats://127.0.0.1:4222"
+# Topic/subject to subscribe to for server events
+nats_topic: "enshrouded-logs"
