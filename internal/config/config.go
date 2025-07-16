@@ -1,12 +1,13 @@
 package config
 
 import (
-	"fmt"
-	"os"
-	"strings"
-	"sync"
+    "fmt"
+    "os"
+    "strings"
+    "sync"
 
-	"github.com/joho/godotenv"
+    "github.com/joho/godotenv"
+    "gopkg.in/yaml.v3"
 )
 
 // Default values for optional configuration variables.
@@ -15,50 +16,116 @@ const (
 	DefaultNatsTopic   = "enshrouded-logs"
 )
 
-// Config holds all configuration loaded from the environment.
+// Options specifies sources of configuration that override defaults.
+type Options struct {
+    ConfigFile    string
+    DiscordToken  string
+    EventsChannel string
+    NatsAddress   string
+    NatsTopic     string
+}
+
+// Config holds the merged configuration values.
 type Config struct {
-	DiscordToken  string
-	EventsChannel string
-	NatsAddress   string
-	NatsTopic     string
+    DiscordToken  string
+    EventsChannel string
+    NatsAddress   string
+    NatsTopic     string
 }
 
 var (
-	cfg     Config
-	once    sync.Once
-	loadErr error
+    cfg     Config
+    once    sync.Once
+    loadErr error
 )
 
 // Load reads the environment once and returns the configuration. If required
 // variables are missing it returns an error.
-func Load() (Config, error) {
-	once.Do(func() {
-		if err := godotenv.Load(); err != nil {
-			loadErr = fmt.Errorf("error loading .env file: %w", err)
-			return
-		}
+func Load(opts Options) (Config, error) {
+    once.Do(func() {
+        _ = godotenv.Load()
 
-		cfg.DiscordToken = strings.TrimSpace(os.Getenv("DISCORD_TOKEN"))
-		cfg.EventsChannel = strings.TrimSpace(os.Getenv("DISCORD_EVENTS_CHANNEL"))
-		cfg.NatsAddress = strings.TrimSpace(getEnvDefault("DISCORD_NATS_ADDRESS", DefaultNatsAddress))
-		cfg.NatsTopic = strings.TrimSpace(getEnvDefault("DISCORD_NATS_TOPIC", DefaultNatsTopic))
+        // defaults
+        cfg.NatsAddress = DefaultNatsAddress
+        cfg.NatsTopic = DefaultNatsTopic
 
-		if cfg.DiscordToken == "" {
-			loadErr = fmt.Errorf("DISCORD_TOKEN is not set")
-			return
-		}
-		if cfg.EventsChannel == "" {
-			loadErr = fmt.Errorf("DISCORD_EVENTS_CHANNEL is not set")
-			return
-		}
-	})
+        // config file
+        if opts.ConfigFile != "" {
+            data, err := os.ReadFile(opts.ConfigFile)
+            if err != nil {
+                loadErr = fmt.Errorf("error reading config file: %w", err)
+                return
+            }
+            var fc struct {
+                DiscordToken  string `yaml:"discord_token"`
+                EventsChannel string `yaml:"events_channel"`
+                NatsAddress   string `yaml:"nats_address"`
+                NatsTopic     string `yaml:"nats_topic"`
+            }
+            if err := yaml.Unmarshal(data, &fc); err != nil {
+                loadErr = fmt.Errorf("error parsing config file: %w", err)
+                return
+            }
+            if fc.DiscordToken != "" {
+                cfg.DiscordToken = fc.DiscordToken
+            }
+            if fc.EventsChannel != "" {
+                cfg.EventsChannel = fc.EventsChannel
+            }
+            if fc.NatsAddress != "" {
+                cfg.NatsAddress = fc.NatsAddress
+            }
+            if fc.NatsTopic != "" {
+                cfg.NatsTopic = fc.NatsTopic
+            }
+        }
 
-	return cfg, loadErr
+        // environment variables override file
+        if v := strings.TrimSpace(os.Getenv("DISCORD_TOKEN")); v != "" {
+            cfg.DiscordToken = v
+        }
+        if v := strings.TrimSpace(os.Getenv("DISCORD_EVENTS_CHANNEL")); v != "" {
+            cfg.EventsChannel = v
+        }
+        if v := strings.TrimSpace(os.Getenv("DISCORD_NATS_ADDRESS")); v != "" {
+            cfg.NatsAddress = v
+        }
+        if v := strings.TrimSpace(os.Getenv("DISCORD_NATS_TOPIC")); v != "" {
+            cfg.NatsTopic = v
+        }
+
+        // command line flags override env
+        if opts.DiscordToken != "" {
+            cfg.DiscordToken = opts.DiscordToken
+        }
+        if opts.EventsChannel != "" {
+            cfg.EventsChannel = opts.EventsChannel
+        }
+        if opts.NatsAddress != "" {
+            cfg.NatsAddress = opts.NatsAddress
+        }
+        if opts.NatsTopic != "" {
+            cfg.NatsTopic = opts.NatsTopic
+        }
+
+        // ensure defaults for optional values
+        if cfg.NatsAddress == "" {
+            cfg.NatsAddress = DefaultNatsAddress
+        }
+        if cfg.NatsTopic == "" {
+            cfg.NatsTopic = DefaultNatsTopic
+        }
+
+        if cfg.DiscordToken == "" {
+            loadErr = fmt.Errorf("discord_token is not set")
+            return
+        }
+        if cfg.EventsChannel == "" {
+            loadErr = fmt.Errorf("events_channel is not set")
+            return
+        }
+    })
+
+    return cfg, loadErr
 }
 
-func getEnvDefault(key, def string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return def
-}

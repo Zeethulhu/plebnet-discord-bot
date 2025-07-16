@@ -1,9 +1,9 @@
 package config
 
 import (
-	"os"
-	"sync"
-	"testing"
+    "os"
+    "sync"
+    "testing"
 )
 
 func reset() {
@@ -21,36 +21,56 @@ func createEnvFile(t *testing.T, content string) {
 }
 
 func TestDefaultValues(t *testing.T) {
-	os.Clearenv()
-	createEnvFile(t, "")
-	if err := os.Setenv("DISCORD_TOKEN", "token"); err != nil {
-		t.Fatalf("failed to set DISCORD_TOKEN: %v", err)
-	}
-	if err := os.Setenv("DISCORD_EVENTS_CHANNEL", "channel"); err != nil {
-		t.Fatalf("failed to set DISCORD_EVENTS_CHANNEL: %v", err)
-	}
+    os.Clearenv()
+    createEnvFile(t, "")
+    if err := os.Setenv("DISCORD_TOKEN", "token"); err != nil {
+        t.Fatalf("failed to set DISCORD_TOKEN: %v", err)
+    }
+    if err := os.Setenv("DISCORD_EVENTS_CHANNEL", "channel"); err != nil {
+        t.Fatalf("failed to set DISCORD_EVENTS_CHANNEL: %v", err)
+    }
 
-	reset()
-	c, err := Load()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+    reset()
+    c, err := Load(Options{})
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
 
-	if c.NatsAddress != DefaultNatsAddress {
-		t.Errorf("expected NatsAddress %q, got %q", DefaultNatsAddress, c.NatsAddress)
-	}
-	if c.NatsTopic != DefaultNatsTopic {
-		t.Errorf("expected NatsTopic %q, got %q", DefaultNatsTopic, c.NatsTopic)
-	}
+    if c.NatsAddress != DefaultNatsAddress {
+        t.Errorf("expected NatsAddress %q, got %q", DefaultNatsAddress, c.NatsAddress)
+    }
+    if c.NatsTopic != DefaultNatsTopic {
+        t.Errorf("expected NatsTopic %q, got %q", DefaultNatsTopic, c.NatsTopic)
+    }
 }
 
 func TestMissingVariables(t *testing.T) {
-	os.Clearenv()
-	createEnvFile(t, "")
+    os.Clearenv()
+    createEnvFile(t, "")
 
-	reset()
-	_, err := Load()
-	if err == nil {
-		t.Fatal("expected error but got nil")
-	}
+    reset()
+    _, err := Load(Options{})
+    if err == nil {
+        t.Fatal("expected error but got nil")
+    }
+}
+
+func TestConfigFile(t *testing.T) {
+    os.Clearenv()
+    createEnvFile(t, "")
+
+    content := []byte("discord_token: t\nevents_channel: c\nnats_address: a\nnats_topic: top")
+    if err := os.WriteFile("config.yaml", content, 0644); err != nil {
+        t.Fatalf("failed to create config file: %v", err)
+    }
+    t.Cleanup(func() { _ = os.Remove("config.yaml") })
+
+    reset()
+    cfg, err := Load(Options{ConfigFile: "config.yaml"})
+    if err != nil {
+        t.Fatalf("unexpected error: %v", err)
+    }
+    if cfg.DiscordToken != "t" || cfg.EventsChannel != "c" || cfg.NatsAddress != "a" || cfg.NatsTopic != "top" {
+        t.Fatalf("config not loaded from file: %+v", cfg)
+    }
 }
