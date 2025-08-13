@@ -9,3 +9,18 @@ events_channel: ""
 nats_address: "nats://127.0.0.1:4222"
 # Topic/subject to subscribe to for server events
 nats_topic: "enshrouded-logs"
+
+# List of games to monitor
+games:
+  - name: "Enshrouded"
+    discord_channel: "123456789012345678"
+    nats_topic: "enshrouded-logs"
+    steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=1203620"
+  - name: "Valheim"
+    discord_channel: "234567890123456789"
+    nats_topic: "valheim-logs"
+    steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=892970"
+  - name: "Palworld"
+    discord_channel: "345678901234567890"
+    nats_topic: "palworld-logs"
+    steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=1623730"
