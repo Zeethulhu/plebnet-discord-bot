@@ -31,7 +31,10 @@ var logger = utils.NewLogger("Enshrouded")
 
 // NewLoginHandler creates a new NATS handler for Enshrouded events.
 func NewLoginHandler(channelID, subject string, manager *messagepicker.Manager) games.GameNATSHandler {
-	gm, _ := manager.ForGame("Enshrouded")
+	gm, ok := manager.ForGame("Enshrouded")
+	if !ok {
+		logger.Println("⚠️ no message templates for Enshrouded; using basic messages")
+	}
 	return &LoginHandler{ChannelID: channelID, SubjectName: subject, Manager: gm}
 }
 
@@ -54,22 +57,30 @@ func (h *LoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
 
 	var msgStr string
 	if event.LogOn {
-		msgStr, err = h.Manager.Pick("join", event.Player)
-		if err != nil {
-			logger.Println("Message error:", err)
-			return
+		if h.Manager != nil {
+			msgStr, err = h.Manager.Pick("join", event.Player)
+			if err != nil {
+				logger.Println("Message error:", err)
+				return
+			}
+			_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player joined. %s", msgStr))
+		} else {
+			_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player joined: %s", event.Player))
 		}
-		_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player joined. %s", msgStr))
 		if err != nil {
 			logger.Printf("❌ Failed to send message: %v", err)
 		}
 	} else if event.LogOff {
-		msgStr, err = h.Manager.Pick("leave", event.Player)
-		if err != nil {
-			logger.Println("Message error:", err)
-			return
+		if h.Manager != nil {
+			msgStr, err = h.Manager.Pick("leave", event.Player)
+			if err != nil {
+				logger.Println("Message error:", err)
+				return
+			}
+			_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player left. %s", msgStr))
+		} else {
+			_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player left: %s", event.Player))
 		}
-		_, err = discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("Player left. %s", msgStr))
 		if err != nil {
 			logger.Printf("❌ Failed to send message: %v", err)
 		}

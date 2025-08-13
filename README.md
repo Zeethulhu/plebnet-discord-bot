@@ -38,6 +38,10 @@ games:
     steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=892970"
 ```
 
+Message templates for each game can be placed under `internal/config/messages/<game>.yaml`,
+but they are optional. If a template file is missing or unreadable the bot will
+fall back to basic join/leave notifications.
+
 ### Usage
 
 Run the bot using Go directly or with a built binary. Command line flags override
