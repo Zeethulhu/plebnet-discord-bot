@@ -1,11 +1,13 @@
-package subscribers
+package enshrouded
 
 import (
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/games"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
 )
@@ -18,23 +20,23 @@ type ServerEvent struct {
 	Timestamp string `json:"timestamp"`
 }
 
-// EnshroudedLoginHandler handles login/logout events published to NATS.
-type EnshroudedLoginHandler struct {
+// LoginHandler handles Enshrouded login/logout events published to NATS.
+type LoginHandler struct {
 	ChannelID   string
 	SubjectName string
 	Manager     *messagepicker.MessageManager
 }
 
-// NewEnshroudedLoginHandler creates the handler and registers it.
-func NewEnshroudedLoginHandler(channelID, subject string, manager *messagepicker.MessageManager) *EnshroudedLoginHandler {
-	h := &EnshroudedLoginHandler{ChannelID: channelID, SubjectName: subject, Manager: manager}
-	Register(h)
-	return h
+var logger = utils.NewLogger("Enshrouded")
+
+// NewLoginHandler creates a new NATS handler for Enshrouded events.
+func NewLoginHandler(channelID, subject string, manager *messagepicker.MessageManager) games.GameNATSHandler {
+	return &LoginHandler{ChannelID: channelID, SubjectName: subject, Manager: manager}
 }
 
-func (h *EnshroudedLoginHandler) Subject() string { return h.SubjectName }
+func (h *LoginHandler) Subject() string { return h.SubjectName }
 
-func (h *EnshroudedLoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
+func (h *LoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
 	var event ServerEvent
 	logger.Println("Received Enshrouded event")
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
@@ -76,4 +78,8 @@ func (h *EnshroudedLoginHandler) Handle(msg *nats.Msg, discord *discordgo.Sessio
 			logger.Printf("❌ Failed to send message: %v", err)
 		}
 	}
+}
+
+func init() {
+	games.RegisterNATSHandler("Enshrouded", NewLoginHandler)
 }
