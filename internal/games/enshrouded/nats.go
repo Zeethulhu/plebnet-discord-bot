@@ -24,14 +24,15 @@ type ServerEvent struct {
 type LoginHandler struct {
 	ChannelID   string
 	SubjectName string
-	Manager     *messagepicker.MessageManager
+	Manager     *messagepicker.GameManager
 }
 
 var logger = utils.NewLogger("Enshrouded")
 
 // NewLoginHandler creates a new NATS handler for Enshrouded events.
-func NewLoginHandler(channelID, subject string, manager *messagepicker.MessageManager) games.GameNATSHandler {
-	return &LoginHandler{ChannelID: channelID, SubjectName: subject, Manager: manager}
+func NewLoginHandler(channelID, subject string, manager *messagepicker.Manager) games.GameNATSHandler {
+	gm, _ := manager.ForGame("Enshrouded")
+	return &LoginHandler{ChannelID: channelID, SubjectName: subject, Manager: gm}
 }
 
 func (h *LoginHandler) Subject() string { return h.SubjectName }
