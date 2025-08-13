@@ -2,8 +2,9 @@
 # Copy this file to config.yaml and fill in your values.
 
 discord_token: ""
-# Discord channel ID for sending messages
+# Optional default Discord channel ID for sending messages
 # e.g. "123456789012345678"
+# If not set, each game entry must specify its own discord_channel
 events_channel: ""
 # Address of the NATS server
 nats_address: "nats://127.0.0.1:4222"

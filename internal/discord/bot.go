@@ -54,7 +54,9 @@ func Start(cfg config.Config) {
 	for _, g := range cfg.Games {
 		channel := g.DiscordChannel
 		if channel == "" {
-			channel = cfg.EventsChannel
+			if cfg.EventsChannel != "" {
+				channel = cfg.EventsChannel
+			}
 		}
 		if channel == "" {
 			logger.Printf("⚠️ Skipping game '%s': no Discord channel configured", g.Name)

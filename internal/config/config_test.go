@@ -26,9 +26,6 @@ func TestDefaultValues(t *testing.T) {
 	if err := os.Setenv("DISCORD_TOKEN", "token"); err != nil {
 		t.Fatalf("failed to set DISCORD_TOKEN: %v", err)
 	}
-	if err := os.Setenv("DISCORD_EVENTS_CHANNEL", "channel"); err != nil {
-		t.Fatalf("failed to set DISCORD_EVENTS_CHANNEL: %v", err)
-	}
 
 	reset()
 	c, err := Load(Options{})
@@ -41,6 +38,9 @@ func TestDefaultValues(t *testing.T) {
 	}
 	if c.NatsTopic != DefaultNatsTopic {
 		t.Errorf("expected NatsTopic %q, got %q", DefaultNatsTopic, c.NatsTopic)
+	}
+	if c.EventsChannel != "" {
+		t.Errorf("expected EventsChannel to be empty, got %q", c.EventsChannel)
 	}
 }
 
@@ -59,7 +59,7 @@ func TestConfigFile(t *testing.T) {
 	os.Clearenv()
 	createEnvFile(t, "")
 
-	content := []byte("discord_token: t\nevents_channel: c\nnats_address: a\nnats_topic: top")
+	content := []byte("discord_token: t\nnats_address: a\nnats_topic: top")
 	if err := os.WriteFile("config.yaml", content, 0644); err != nil {
 		t.Fatalf("failed to create config file: %v", err)
 	}
@@ -70,7 +70,7 @@ func TestConfigFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.DiscordToken != "t" || cfg.EventsChannel != "c" || cfg.NatsAddress != "a" || cfg.NatsTopic != "top" {
+	if cfg.DiscordToken != "t" || cfg.NatsAddress != "a" || cfg.NatsTopic != "top" || cfg.EventsChannel != "" {
 		t.Fatalf("config not loaded from file: %+v", cfg)
 	}
 }
@@ -79,7 +79,7 @@ func TestGamesFromConfigFile(t *testing.T) {
 	os.Clearenv()
 	createEnvFile(t, "")
 
-	content := []byte("discord_token: t\nevents_channel: c\ngames:\n  - name: g1\n    discord_channel: dc\n    nats_topic: nt\n    steam_rss: sr")
+	content := []byte("discord_token: t\ngames:\n  - name: g1\n    discord_channel: dc\n    nats_topic: nt\n    steam_rss: sr")
 	if err := os.WriteFile("config.yaml", content, 0644); err != nil {
 		t.Fatalf("failed to create config file: %v", err)
 	}
@@ -89,6 +89,9 @@ func TestGamesFromConfigFile(t *testing.T) {
 	c, err := Load(Options{ConfigFile: "config.yaml"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if c.EventsChannel != "" {
+		t.Fatalf("expected EventsChannel to be empty, got %q", c.EventsChannel)
 	}
 	if len(c.Games) != 1 {
 		t.Fatalf("expected 1 game, got %d", len(c.Games))
