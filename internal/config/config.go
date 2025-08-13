@@ -137,10 +137,6 @@ func Load(opts Options) (Config, error) {
 			loadErr = fmt.Errorf("discord_token is not set")
 			return
 		}
-		if cfg.EventsChannel == "" {
-			loadErr = fmt.Errorf("events_channel is not set")
-			return
-		}
 	})
 
 	return cfg, loadErr

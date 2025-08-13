@@ -9,7 +9,7 @@ deployments, but for local use you can copy `.env.example` to `.env`:
 
 ```
 DISCORD_TOKEN="..."               # Discord bot token
-DISCORD_EVENTS_CHANNEL="..."      # Channel ID for server event messages
+DISCORD_EVENTS_CHANNEL="..."      # (optional) default channel ID for server event messages
 DISCORD_NATS_ADDRESS="nats://127.0.0.1:4222"  # NATS server address
 DISCORD_NATS_TOPIC="enshrouded"   # NATS subject to subscribe to
 ```
@@ -22,6 +22,7 @@ Discord channel, NATS topic, and Steam RSS feed for a game:
 ```yaml
 # config.yaml
 discord_token: "TOKEN"
+# Optional default channel. Each game entry can override discord_channel.
 events_channel: "123456789012345678"
 nats_address: "nats://127.0.0.1:4222"
 nats_topic: "enshrouded-logs"
