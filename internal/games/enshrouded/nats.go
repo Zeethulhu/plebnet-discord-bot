@@ -85,7 +85,7 @@ func (h *LoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
 			logger.Printf("❌ Failed to send message: %v", err)
 		}
 	} else {
-		_, err := discord.ChannelMessageSend(h.ChannelID, fmt.Sprintf("⚠️ Unrecognized player event for @%s at %s", event.Player, tStr))
+		_, err := discord.ChannelMessageSend(h.ChannelID, "⚠️ Unrecognized player event for @"+event.Player+" at "+tStr)
 		if err != nil {
 			logger.Printf("❌ Failed to send message: %v", err)
 		}
