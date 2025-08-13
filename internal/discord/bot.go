@@ -76,7 +76,7 @@ func Start(cfg config.Config) {
 		}
 
 		if g.SteamRSS != "" {
-			if _, err := timers.NewEnshroudedNewsTimer(channel, "steam_news.db"); err != nil {
+			if _, err := timers.NewSteamNewsTimer(channel, g.SteamRSS, "steam_news.db"); err != nil {
 				logger.Printf("❌ Failed to start Steam news timer for '%s': %v", g.Name, err)
 			} else {
 				timersStarted = true
