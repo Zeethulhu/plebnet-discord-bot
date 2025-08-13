@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/config"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/subscribers"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/timers"
@@ -13,18 +14,19 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
+// Start launches the bot using the provided configuration.
+func Start(cfg config.Config) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// Connecting to NATS to subscribe to Enshrouded Server Events
-	nc, err := nats.Connect(natsAddr)
+	// Connecting to NATS to subscribe to Server Events
+	nc, err := nats.Connect(cfg.NatsAddress)
 	if err != nil {
 		logger.Fatal("❌ Failed to connect to NATS:", err)
 	}
 
 	// Create a new Discord session
 	logger.Println("🤖 Creating Discord session...")
-	dg, err := discordgo.New("Bot " + token)
+	dg, err := discordgo.New("Bot " + cfg.DiscordToken)
 	if err != nil {
 		logger.Fatalf("❌ Error creating Discord session: %v", err)
 	}
@@ -44,15 +46,53 @@ func Start(token string, eventsChan string, natsAddr string, natsTopic string) {
 		logger.Fatalf("❌ Error loading messages: %v", err)
 	}
 
-	// Register event handlers and start subscriptions
-	subscribers.NewEnshroudedLoginHandler(eventsChan, natsTopic, manager)
+	timersStarted := false
+
+	// Register event handlers and start subscriptions for each configured game
+	for _, g := range cfg.Games {
+		channel := g.DiscordChannel
+		if channel == "" {
+			channel = cfg.EventsChannel
+		}
+		if channel == "" {
+			logger.Printf("⚠️ Skipping game '%s': no Discord channel configured", g.Name)
+			continue
+		}
+
+		started := false
+
+		if g.NatsTopic != "" {
+			subscribers.NewEnshroudedLoginHandler(channel, g.NatsTopic, manager)
+			logger.Printf("📡 NATS handler started for game '%s' on topic '%s'", g.Name, g.NatsTopic)
+			started = true
+		} else {
+			logger.Printf("⚠️ Game '%s' missing NATS topic; NATS handler not started", g.Name)
+		}
+
+		if g.SteamRSS != "" {
+			if _, err := timers.NewEnshroudedNewsTimer(channel, "steam_news.db"); err != nil {
+				logger.Printf("❌ Failed to start Steam news timer for '%s': %v", g.Name, err)
+			} else {
+				timersStarted = true
+				started = true
+				logger.Printf("⏰ Steam news timer started for game '%s'", g.Name)
+			}
+		} else {
+			logger.Printf("ℹ️ Game '%s' missing Steam RSS; timer not started", g.Name)
+		}
+
+		if started {
+			logger.Printf("🎮 Game '%s' started", g.Name)
+		} else {
+			logger.Printf("⚠️ Game '%s' skipped: no handlers started", g.Name)
+		}
+	}
+
 	go subscribers.StartListeners(nc, dg)
 	logger.Println("NATS Event subscription routine started")
 
-	if _, err := timers.NewEnshroudedNewsTimer(eventsChan, "steam_news.db"); err == nil {
+	if timersStarted {
 		go timers.Start(ctx, dg)
-	} else {
-		logger.Printf("❌ Failed to start Steam news timer: %v", err)
 	}
 
 	logger.Println("✅ Bot is now running. Press CTRL+C to exit.")
