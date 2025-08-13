@@ -9,8 +9,11 @@ import (
 	"time"
 
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/config"
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/utils"
 	"gopkg.in/yaml.v3"
 )
+
+var logger = utils.NewLogger("Messages")
 
 // MessagesByCategory holds categorized message lists from YAML
 type MessagesByCategory map[string][]string
@@ -36,11 +39,13 @@ func NewManager(dir string, games []config.GameConfig, recentSize int) (*Manager
 		path := filepath.Join(dir, filename)
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return nil, fmt.Errorf("reading messages for %s: %w", g.Name, err)
+			logger.Printf("⚠️ skipping messages for %s: %v", g.Name, err)
+			continue
 		}
 		var messages MessagesByCategory
 		if err := yaml.Unmarshal(data, &messages); err != nil {
-			return nil, fmt.Errorf("parsing messages for %s: %w", g.Name, err)
+			logger.Printf("⚠️ skipping messages for %s: %v", g.Name, err)
+			continue
 		}
 		m.games[g.Name] = &GameManager{
 			messages:   messages,
