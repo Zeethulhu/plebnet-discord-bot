@@ -10,15 +10,16 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// EnshroudedNewsTimer posts recent Steam RSS items to Discord.
-type EnshroudedNewsTimer struct {
+// SteamNewsTimer posts recent Steam RSS items to Discord.
+type SteamNewsTimer struct {
 	ChannelID string
+	feedURL   string
 	db        *sql.DB
 	parser    *gofeed.Parser
 }
 
-// NewEnshroudedNewsTimer creates the timer and registers it.
-func NewEnshroudedNewsTimer(channelID, dbPath string) (*EnshroudedNewsTimer, error) {
+// NewSteamNewsTimer creates the timer and registers it.
+func NewSteamNewsTimer(channelID, feedURL, dbPath string) (*SteamNewsTimer, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err
@@ -26,19 +27,19 @@ func NewEnshroudedNewsTimer(channelID, dbPath string) (*EnshroudedNewsTimer, err
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS posts (guid TEXT PRIMARY KEY)`); err != nil {
 		return nil, err
 	}
-	t := &EnshroudedNewsTimer{ChannelID: channelID, db: db, parser: gofeed.NewParser()}
+	t := &SteamNewsTimer{ChannelID: channelID, feedURL: feedURL, db: db, parser: gofeed.NewParser()}
 	Register(t)
 	return t, nil
 }
 
-func (t *EnshroudedNewsTimer) Name() string { return "enshrouded_news" }
+func (t *SteamNewsTimer) Name() string { return "steam_news" }
 
-func (t *EnshroudedNewsTimer) Interval() time.Duration { return time.Hour }
+func (t *SteamNewsTimer) Interval() time.Duration { return time.Hour }
 
-func (t *EnshroudedNewsTimer) Run(ctx context.Context, s *discordgo.Session) {
-	feed, err := t.parser.ParseURL("https://store.steampowered.com/feeds/news/app/1203620/")
+func (t *SteamNewsTimer) Run(ctx context.Context, s *discordgo.Session) {
+	feed, err := t.parser.ParseURL(t.feedURL)
 	if err != nil {
-		logger.Printf("❌ Failed to fetch Enshrouded Steam feed: %v", err)
+		logger.Printf("❌ Failed to fetch Steam feed: %v", err)
 		return
 	}
 	cutoff := time.Now().Add(-24 * time.Hour)
@@ -55,11 +56,11 @@ func (t *EnshroudedNewsTimer) Run(ctx context.Context, s *discordgo.Session) {
 			continue // already posted
 		}
 		if _, err := s.ChannelMessageSend(t.ChannelID, item.Link); err != nil {
-			logger.Printf("❌ Failed to post Enshrouded Steam news: %v", err)
+			logger.Printf("❌ Failed to post Steam news: %v", err)
 			continue
 		}
 		if _, err := t.db.Exec(`INSERT INTO posts(guid) VALUES(?)`, guid); err != nil {
-			logger.Printf("❌ Failed to record Enshrouded Steam news GUID: %v", err)
+			logger.Printf("❌ Failed to record Steam news GUID: %v", err)
 		}
 	}
 }
