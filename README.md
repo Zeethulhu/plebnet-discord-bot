@@ -16,7 +16,8 @@ DISCORD_NATS_TOPIC="enshrouded"   # NATS subject to subscribe to
 
 An example YAML configuration file is provided as `config.example.yaml` and can
 be renamed to `config.yaml` or referenced via the `--config` flag when starting
-the bot:
+the bot. A `games` list can also be included where each entry specifies the
+Discord channel, NATS topic, and Steam RSS feed for a game:
 
 ```yaml
 # config.yaml
@@ -24,6 +25,16 @@ discord_token: "TOKEN"
 events_channel: "123456789012345678"
 nats_address: "nats://127.0.0.1:4222"
 nats_topic: "enshrouded-logs"
+
+games:
+  - name: "Enshrouded"
+    discord_channel: "123456789012345678"
+    nats_topic: "enshrouded-logs"
+    steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=1203620"
+  - name: "Valheim"
+    discord_channel: "234567890123456789"
+    nats_topic: "valheim-logs"
+    steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=892970"
 ```
 
 ### Usage
