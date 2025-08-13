@@ -7,6 +7,8 @@ import (
 	"syscall"
 
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/config"
+	"github.com/Zeethulhu/plebnet-discord-bot/internal/games"
+	_ "github.com/Zeethulhu/plebnet-discord-bot/internal/games/enshrouded"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/subscribers"
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/timers"
@@ -62,9 +64,13 @@ func Start(cfg config.Config) {
 		started := false
 
 		if g.NatsTopic != "" {
-			subscribers.NewEnshroudedLoginHandler(channel, g.NatsTopic, manager)
-			logger.Printf("📡 NATS handler started for game '%s' on topic '%s'", g.Name, g.NatsTopic)
-			started = true
+			if handler, ok := games.NewNATSHandler(g.Name, channel, g.NatsTopic, manager); ok {
+				subscribers.Register(handler)
+				logger.Printf("📡 NATS handler started for game '%s' on topic '%s'", g.Name, g.NatsTopic)
+				started = true
+			} else {
+				logger.Printf("⚠️ No NATS handler registered for game '%s'", g.Name)
+			}
 		} else {
 			logger.Printf("⚠️ Game '%s' missing NATS topic; NATS handler not started", g.Name)
 		}
