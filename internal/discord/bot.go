@@ -43,7 +43,7 @@ func Start(cfg config.Config) {
 		logger.Fatalf("❌ Cannot open the session: %v", err)
 	}
 
-	manager, err := messagepicker.NewManager("internal/config/messages.yaml", 3)
+	manager, err := messagepicker.NewManager("internal/config/messages", cfg.Games, 3)
 	if err != nil {
 		logger.Fatalf("❌ Error loading messages: %v", err)
 	}

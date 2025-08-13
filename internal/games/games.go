@@ -15,7 +15,7 @@ type GameNATSHandler interface {
 }
 
 // HandlerFactory creates a NATS handler for a game.
-type HandlerFactory func(channelID, subject string, manager *messagepicker.MessageManager) GameNATSHandler
+type HandlerFactory func(channelID, subject string, manager *messagepicker.Manager) GameNATSHandler
 
 var natsHandlers = map[string]HandlerFactory{}
 
@@ -26,7 +26,7 @@ func RegisterNATSHandler(name string, f HandlerFactory) {
 
 // NewNATSHandler instantiates a handler for the specified game.
 // The boolean return indicates whether a factory was registered for that game.
-func NewNATSHandler(name, channelID, subject string, manager *messagepicker.MessageManager) (GameNATSHandler, bool) {
+func NewNATSHandler(name, channelID, subject string, manager *messagepicker.Manager) (GameNATSHandler, bool) {
 	f, ok := natsHandlers[name]
 	if !ok {
 		return nil, false
