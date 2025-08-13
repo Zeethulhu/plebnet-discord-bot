@@ -12,6 +12,7 @@ type Task interface {
 	Name() string
 	Interval() time.Duration
 	Run(ctx context.Context, s *discordgo.Session)
+	Close() error
 }
 
 var registry []Task

@@ -2,8 +2,10 @@ package discord
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/config"
@@ -78,7 +80,8 @@ func Start(cfg config.Config) {
 		}
 
 		if g.SteamRSS != "" {
-			if _, err := timers.NewSteamNewsTimer(channel, g.SteamRSS, "steam_news.db"); err != nil {
+			dbPath := fmt.Sprintf("steam_news_%s.db", strings.ToLower(g.Name))
+			if _, err := timers.NewSteamNewsTimer(channel, g.SteamRSS, dbPath); err != nil {
 				logger.Printf("❌ Failed to start Steam news timer for '%s': %v", g.Name, err)
 			} else {
 				timersStarted = true

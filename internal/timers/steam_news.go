@@ -64,3 +64,8 @@ func (t *SteamNewsTimer) Run(ctx context.Context, s *discordgo.Session) {
 		}
 	}
 }
+
+// Close shuts down the underlying database.
+func (t *SteamNewsTimer) Close() error {
+	return t.db.Close()
+}

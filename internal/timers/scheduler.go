@@ -19,6 +19,9 @@ func Start(ctx context.Context, s *discordgo.Session) {
 				select {
 				case <-ctx.Done():
 					logger.Printf("🛑 Timer '%s' stopped", task.Name())
+					if err := task.Close(); err != nil {
+						logger.Printf("❌ Error closing timer '%s': %v", task.Name(), err)
+					}
 					return
 				case <-ticker.C:
 					task.Run(ctx, s)
