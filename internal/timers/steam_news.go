@@ -25,6 +25,7 @@ func NewSteamNewsTimer(channelID, feedURL, dbPath string) (*SteamNewsTimer, erro
 		return nil, err
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS posts (guid TEXT PRIMARY KEY)`); err != nil {
+		db.Close()
 		return nil, err
 	}
 	t := &SteamNewsTimer{ChannelID: channelID, feedURL: feedURL, db: db, parser: gofeed.NewParser()}
