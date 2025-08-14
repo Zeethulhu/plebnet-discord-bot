@@ -35,7 +35,8 @@ type Manager struct {
 func NewManager(dir string, games []config.GameConfig, recentSize int) (*Manager, error) {
 	m := &Manager{games: make(map[string]*GameManager)}
 	for _, g := range games {
-		filename := strings.ToLower(g.Name) + ".yaml"
+		name := strings.ToLower(g.Name)
+		filename := name + ".yaml"
 		path := filepath.Join(dir, filename)
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -47,7 +48,7 @@ func NewManager(dir string, games []config.GameConfig, recentSize int) (*Manager
 			logger.Printf("⚠️ skipping messages for %s: %v", g.Name, err)
 			continue
 		}
-		m.games[g.Name] = &GameManager{
+		m.games[name] = &GameManager{
 			messages:   messages,
 			recent:     make(map[string][]int),
 			recentSize: recentSize,
@@ -59,7 +60,7 @@ func NewManager(dir string, games []config.GameConfig, recentSize int) (*Manager
 
 // ForGame retrieves the GameManager for the given game name
 func (m *Manager) ForGame(name string) (*GameManager, bool) {
-	gm, ok := m.games[name]
+	gm, ok := m.games[strings.ToLower(name)]
 	return gm, ok
 }
 

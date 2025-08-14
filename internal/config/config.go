@@ -128,6 +128,10 @@ func Load(opts Options) (Config, error) {
 			cfg.Games = opts.Games
 		}
 
+		for i := range cfg.Games {
+			cfg.Games[i].Name = strings.ToLower(cfg.Games[i].Name)
+		}
+
 		// ensure defaults for optional values
 		if cfg.NatsAddress == "" {
 			cfg.NatsAddress = DefaultNatsAddress
