@@ -1,6 +1,8 @@
 package games
 
 import (
+	"strings"
+
 	"github.com/Zeethulhu/plebnet-discord-bot/internal/messagepicker"
 	"github.com/bwmarrin/discordgo"
 	"github.com/nats-io/nats.go"
@@ -21,13 +23,13 @@ var natsHandlers = map[string]HandlerFactory{}
 
 // RegisterNATSHandler registers a factory for the given game name.
 func RegisterNATSHandler(name string, f HandlerFactory) {
-	natsHandlers[name] = f
+	natsHandlers[strings.ToLower(name)] = f
 }
 
 // NewNATSHandler instantiates a handler for the specified game.
 // The boolean return indicates whether a factory was registered for that game.
 func NewNATSHandler(name, channelID, subject string, manager *messagepicker.Manager) (GameNATSHandler, bool) {
-	f, ok := natsHandlers[name]
+	f, ok := natsHandlers[strings.ToLower(name)]
 	if !ok {
 		return nil, false
 	}

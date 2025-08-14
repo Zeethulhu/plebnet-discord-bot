@@ -29,9 +29,11 @@ type LoginHandler struct {
 
 var logger = utils.NewLogger("Enshrouded")
 
+const gameName = "enshrouded"
+
 // NewLoginHandler creates a new NATS handler for Enshrouded events.
 func NewLoginHandler(channelID, subject string, manager *messagepicker.Manager) games.GameNATSHandler {
-	gm, ok := manager.ForGame("Enshrouded")
+	gm, ok := manager.ForGame(gameName)
 	if !ok {
 		logger.Println("⚠️ no message templates for Enshrouded; using basic messages")
 	}
@@ -93,5 +95,5 @@ func (h *LoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
 }
 
 func init() {
-	games.RegisterNATSHandler("Enshrouded", NewLoginHandler)
+	games.RegisterNATSHandler(gameName, NewLoginHandler)
 }
