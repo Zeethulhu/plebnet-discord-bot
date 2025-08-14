@@ -26,8 +26,8 @@ func main() {
         NatsTopic:     *natsTopic,
     }
 
-    discord.StartServer(opts)
     logger.Println(getStartupMessage())
+    discord.StartServer(opts)
 }
 
 func getStartupMessage() string {
