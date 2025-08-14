@@ -8,7 +8,8 @@ discord_token: ""
 events_channel: ""
 # Address of the NATS server
 nats_address: "nats://127.0.0.1:4222"
-# Topic/subject to subscribe to for server events
+# Topic/subject to subscribe to for server events. Acts as a fallback for
+# games that do not specify their own nats_topic.
 nats_topic: "enshrouded-logs"
 
 # List of games to monitor
@@ -23,5 +24,5 @@ games:
     steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=892970"
   - name: "Palworld"
     discord_channel: "345678901234567890"
-    nats_topic: "palworld-logs"
+    # nats_topic omitted: will fall back to the root nats_topic
     steam_rss: "https://store.steampowered.com/feeds/news.xml?appid=1623730"

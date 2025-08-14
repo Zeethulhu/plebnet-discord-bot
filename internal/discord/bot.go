@@ -67,10 +67,15 @@ func Start(cfg config.Config) {
 
 		started := false
 
-		if g.NatsTopic != "" {
-			if handler, ok := games.NewNATSHandler(g.Name, channel, g.NatsTopic, manager); ok {
+		topic := g.NatsTopic
+		if topic == "" {
+			topic = cfg.NatsTopic // fallback to root config topic
+		}
+
+		if topic != "" {
+			if handler, ok := games.NewNATSHandler(g.Name, channel, topic, manager); ok {
 				subscribers.Register(handler)
-				logger.Printf("📡 NATS handler started for game '%s' on topic '%s'", g.Name, g.NatsTopic)
+				logger.Printf("📡 NATS handler started for game '%s' on topic '%s'", g.Name, topic)
 				started = true
 			} else {
 				logger.Printf("⚠️ No NATS handler registered for game '%s'", g.Name)
