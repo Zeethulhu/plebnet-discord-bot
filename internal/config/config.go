@@ -31,16 +31,19 @@ type Config struct {
 	DiscordToken  string
 	EventsChannel string
 	NatsAddress   string
-	NatsTopic     string
-	Games         []GameConfig
+	// NatsTopic is the default NATS subject used when a game does not
+	// specify its own nats_topic.
+	NatsTopic string
+	Games     []GameConfig
 }
 
 // GameConfig holds configuration for a single game.
 type GameConfig struct {
 	Name           string `yaml:"name"`
 	DiscordChannel string `yaml:"discord_channel"`
-	NatsTopic      string `yaml:"nats_topic"`
-	SteamRSS       string `yaml:"steam_rss"`
+	// NatsTopic overrides the root NatsTopic for this specific game.
+	NatsTopic string `yaml:"nats_topic"`
+	SteamRSS  string `yaml:"steam_rss"`
 }
 
 var (
