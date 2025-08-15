@@ -19,6 +19,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	logger.Printf("💬 Received Discord message from %s: %s", m.Author.Username, m.Content)
+
 	// Parse command and arguments
 	content := strings.TrimPrefix(m.Content, prefix)
 	parts := utils.ParseArgs(content)

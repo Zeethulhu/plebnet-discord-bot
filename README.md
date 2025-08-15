@@ -50,6 +50,9 @@ both environment variables and the config file.
 ```bash
 go run ./cmd/bot --config config.yaml
 
+# Enable verbose logging
+go run ./cmd/bot --config config.yaml --verbose
+
 # Override specific options
 go run ./cmd/bot --token "$DISCORD_TOKEN" --channel "$DISCORD_CHANNEL"
 ```
