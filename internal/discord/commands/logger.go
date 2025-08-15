@@ -1,8 +1,5 @@
 package commands
 
-import (
-	"log"
-	"os"
-)
+import "github.com/Zeethulhu/plebnet-discord-bot/internal/utils"
 
-var logger = log.New(os.Stdout, "[Discord] ", log.LstdFlags)
+var logger = utils.NewLogger("Discord")

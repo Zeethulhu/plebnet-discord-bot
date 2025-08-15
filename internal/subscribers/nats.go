@@ -10,6 +10,7 @@ func StartListeners(nc *nats.Conn, discord *discordgo.Session) {
 	for _, h := range All() {
 		handler := h
 		_, err := nc.Subscribe(handler.Subject(), func(msg *nats.Msg) {
+			logger.Printf("📨 Received NATS message on '%s': %s", msg.Subject, string(msg.Data))
 			handler.Handle(msg, discord)
 		})
 		if err != nil {

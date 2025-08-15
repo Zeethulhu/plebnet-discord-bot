@@ -44,7 +44,7 @@ func (h *LoginHandler) Subject() string { return h.SubjectName }
 
 func (h *LoginHandler) Handle(msg *nats.Msg, discord *discordgo.Session) {
 	var event ServerEvent
-	logger.Println("Received Enshrouded event")
+	logger.Printf("📨 Received Enshrouded NATS message: %s", string(msg.Data))
 	if err := json.Unmarshal(msg.Data, &event); err != nil {
 		logger.Printf("❌ Failed to parse event: %v", err)
 		return
